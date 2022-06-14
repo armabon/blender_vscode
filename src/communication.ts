@@ -150,6 +150,10 @@ function SERVER_handleRequest(request: any, response: any) {
                     response.end('OK');
                     break;
                 }
+                case 'moduleUpdated': {
+                    response.end('OK');
+                    break;
+                }
                 default: {
                     throw new Error('unknown type');
                 }

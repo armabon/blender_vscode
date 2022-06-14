@@ -140,6 +140,26 @@ export async function getSubfolders(root: string) {
         });
     });
 }
+export async function getSubFiles(root: string) {
+    return new Promise<string[]>((resolve, reject) => {
+        fs.readdir(root, { encoding: 'utf8' }, async (err, files) => {
+            if (err !== null) {
+                reject(err);
+                return;
+            }
+
+            let folders = [];
+            for (let name of files) {
+                if (name !== "__pycache__"){
+                    let fullpath = path.join(root, name.split('.')[0]);
+                    folders.push(fullpath);
+                }
+            }
+
+            resolve(folders);
+        });
+    });
+}
 
 export async function isDirectory(filepath: string) {
     return new Promise<boolean>(resolve => {

@@ -9,12 +9,15 @@ sys.path.append(str(include_dir))
 
 import blender_vscode
 print(json.loads(os.environ['ADDONS_TO_LOAD']))
+print(json.loads(os.environ['MODULES']))
 
 try:
     blender_vscode.startup(
         editor_address=f"http://localhost:{os.environ['EDITOR_PORT']}",
         addons_to_load=tuple(map(lambda x: (Path(x["load_dir"]), x["module_name"]),
                                  json.loads(os.environ['ADDONS_TO_LOAD']))),
+        modules_to_load=tuple(map(lambda x: (Path(x["load_dir"]), x["module_name"]),
+                                 json.loads(os.environ['MODULES']))),
         allow_modify_external_python=os.environ['ALLOW_MODIFY_EXTERNAL_PYTHON'] == "yes",
     )
 except Exception as e:

@@ -6,9 +6,10 @@ import * as child_process from 'child_process';
 import { launchPath } from './paths';
 import { getServerPort } from './communication';
 import { letUserPickItem } from './select_utils';
-import { getConfig, cancel, runTask } from './utils';
-import { AddonWorkspaceFolder } from './addon_folder';
+import { getConfig, cancel, runTask, pathExists } from './utils';
+import { AddonWorkspaceFolder, ModuleWorkspaceFolder } from './addon_folder';
 import { BlenderWorkspaceFolder } from './blender_folder';
+import * as fs from 'fs';
 
 
 export class BlenderExecutable {
@@ -183,17 +184,46 @@ async function testIfPathIsBlender(filepath: string) {
 }
 
 function getBlenderLaunchArgs() {
-    return ['--python', launchPath];
+    return ['--python-use-system-env','--python', launchPath];
 }
 
 async function getBlenderLaunchEnv() {
     let config = getConfig();
     let addons = await AddonWorkspaceFolder.All();
-    let loadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
+    let addonsLoadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
+    let modules = await ModuleWorkspaceFolder.All();
+    let modulesLoadDirsWithNames = await Promise.all(modules.map(m => m.getLoadDirectoryAndModuleName()));
 
-    return {
-        ADDONS_TO_LOAD: JSON.stringify(loadDirsWithNames),
+    let blenderDevEnv = {
+        ADDONS_TO_LOAD: JSON.stringify(addonsLoadDirsWithNames),
+        MODULES: JSON.stringify(modulesLoadDirsWithNames),
         EDITOR_PORT: getServerPort().toString(),
         ALLOW_MODIFY_EXTERNAL_PYTHON: <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no',
+        BLENDER_USER_SCRIPTS: <string>config.get('userScriptFolder')
     };
+    // Object.defineProperty(blenderDevEnv, 'TOTO', {value: 'asdsadsd', writable: true});
+    // Object.defineProperty(blenderDevEnv, 'BLENDER_USER_SCRIPTS', {value: 'C:/Users/smartinez/repos/blender3'});
+    // Inject environement vars from the given file
+    let envFile = <string>config.get('envFile');
+
+    if (await pathExists(envFile)){
+        fs.readFile(envFile, 'utf8', function(err, data){
+            if (err !== null){
+                console.log(err);
+            }
+            let lines = data.split(/\r?\n/);
+            lines.forEach((line) => {
+                console.log(line);
+                const line_elem = line.split("=");
+                if (line_elem.length === 2){
+                    // Object.defineProperty(blenderDevEnv, String(line_elem[0]), String(line_elem[1]));
+                    blenderDevEnv[line_elem[0]]=line_elem[1];
+                    // Object.defineProperty(blenderDevEnv, line_elem[0], line_elem[1]);
+                }
+            });
+        
+        });
+    }
+
+    return blenderDevEnv;
 }

@@ -211,6 +211,16 @@
             "items": {
               "type": "string"
             }
+          },
+          "blender.userScriptFolder": {
+            "type":"string",
+            "scope": "resource",
+            "description": "Enable `USERSCRIPT` folder debug debug (EXPERIMENTAL)."
+          },
+          "blender.envFile": {
+            "type":"string",
+            "scope": "resource",
+            "description": "Path to a file containing a list of environment variables to load in blender (EXPERIMENTAL)."
           }
         }
       }
