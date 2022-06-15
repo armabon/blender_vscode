@@ -20,7 +20,6 @@ def get_user_scripts_folder_path_mapping():
 
     # Module mapping
     modules_dir = Path(environment.scripts_folder, "modules")
-    # TODO: Find a cleaner way
     path_mappings.extend([{"src": str(f), "load": str(f)}
                          for f in modules_dir.rglob("*.py")])
 
@@ -28,13 +27,6 @@ def get_user_scripts_folder_path_mapping():
         print(f"mapping item:  {mapping}")
 
     return path_mappings
-
-
-def get_addons_path_mapping(addons_to_load):
-    # print(f"loading addons: {addons_to_load}")
-    # TODO: Addons path mapping
-
-    return load_addons.setup_addon_links(addons_to_load)
 
 
 try:
@@ -51,7 +43,7 @@ try:
         print("Debug user script folder enabled.")
         path_mapping = get_user_scripts_folder_path_mapping()
     else:
-        path_mapping = get_addons_path_mapping(environment.addons_to_load)
+        path_mapping = load_addons.setup_addon_links(environment.addons_to_load)
 
     communication.setup(environment.editor_address, path_mapping)
 
