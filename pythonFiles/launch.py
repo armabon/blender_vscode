@@ -48,6 +48,7 @@ try:
 
     # Debug folder mapping setup
     if environment.enable_user_script_folder:
+        print("Debug user script folder enabled.")
         path_mapping = get_user_scripts_folder_path_mapping()
     else:
         path_mapping = get_addons_path_mapping(environment.addons_to_load)

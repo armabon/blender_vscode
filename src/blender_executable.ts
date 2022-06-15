@@ -195,7 +195,7 @@ async function getBlenderLaunchEnv() {
     const blenderEnv: { [index: string]: any } = {};
 
     let debugUserScriptFolder = <boolean>config.get('debugUserScriptFolder');
-    let userScriptForlderPath = <string>config.get('userScriptFolder');
+    let userScriptForlderPath = <string>config.get('customUserScriptFolderPath');
 
     blenderEnv['EDITOR_PORT'] = getServerPort().toString();
     blenderEnv['ALLOW_MODIFY_EXTERNAL_PYTHON'] = <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no';

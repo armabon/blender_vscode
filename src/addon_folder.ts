@@ -29,7 +29,7 @@ export class ModuleWorkspaceFolder {
     public static async All(){
         let modules = [];
         let config = getConfig();
-        let scriptFolder = <string>config.get('userScriptFolder');
+        let scriptFolder = <string>config.get('customUserScriptFolderPath');
 
         let rootSubFolders = await getSubfolders(scriptFolder);
 
@@ -91,7 +91,7 @@ export class AddonWorkspaceFolder {
 
         if (folders.length === 0){
             let config = getConfig();
-            let scriptFolder = <string>config.get('userScriptFolder');
+            let scriptFolder = <string>config.get('customUserScriptFolderPath');
             let rootSubFolders = await getSubfolders(scriptFolder);
             for (let folder of rootSubFolders) {
                 if (folder.includes("addons")){
