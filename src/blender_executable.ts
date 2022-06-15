@@ -7,7 +7,7 @@ import { launchPath } from './paths';
 import { getServerPort } from './communication';
 import { letUserPickItem } from './select_utils';
 import { getConfig, cancel, runTask, pathExists } from './utils';
-import { AddonWorkspaceFolder, ModuleWorkspaceFolder } from './addon_folder';
+import { AddonWorkspaceFolder } from './addon_folder';
 import { BlenderWorkspaceFolder } from './blender_folder';
 import * as fs from 'fs';
 
@@ -191,39 +191,34 @@ async function getBlenderLaunchEnv() {
     let config = getConfig();
     let addons = await AddonWorkspaceFolder.All();
     let addonsLoadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
-    let modules = await ModuleWorkspaceFolder.All();
-    let modulesLoadDirsWithNames = await Promise.all(modules.map(m => m.getLoadDirectoryAndModuleName()));
 
-    let blenderDevEnv = {
-        ADDONS_TO_LOAD: JSON.stringify(addonsLoadDirsWithNames),
-        MODULES: JSON.stringify(modulesLoadDirsWithNames),
-        EDITOR_PORT: getServerPort().toString(),
-        ALLOW_MODIFY_EXTERNAL_PYTHON: <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no',
-        BLENDER_USER_SCRIPTS: <string>config.get('userScriptFolder')
-    };
-    // Object.defineProperty(blenderDevEnv, 'TOTO', {value: 'asdsadsd', writable: true});
-    // Object.defineProperty(blenderDevEnv, 'BLENDER_USER_SCRIPTS', {value: 'C:/Users/smartinez/repos/blender3'});
-    // Inject environement vars from the given file
+    const blenderEnv: { [index: string]: any } = {};
+
+    blenderEnv['EDITOR_PORT'] = getServerPort().toString();
+    blenderEnv['ALLOW_MODIFY_EXTERNAL_PYTHON'] = <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no';
+    blenderEnv['ADDONS_TO_LOAD'] = JSON.stringify(addonsLoadDirsWithNames);
+    blenderEnv['ENABLE_USER_SCRIPT_FOLDER'] = <boolean>config.get('enableUserScriptFolder') ? 'yes' : 'no';
+    blenderEnv['BLENDER_USER_SCRIPTS'] = <string>config.get('userScriptFolder');
+
+    // If an envfile is given, inject his content
     let envFile = <string>config.get('envFile');
 
-    if (await pathExists(envFile)){
-        fs.readFile(envFile, 'utf8', function(err, data){
-            if (err !== null){
+    if (await pathExists(envFile)) {
+        fs.readFile(envFile, 'utf8', function (err, data) {
+            if (err !== null) {
                 console.log(err);
             }
             let lines = data.split(/\r?\n/);
             lines.forEach((line) => {
                 console.log(line);
                 const line_elem = line.split("=");
-                if (line_elem.length === 2){
-                    // Object.defineProperty(blenderDevEnv, String(line_elem[0]), String(line_elem[1]));
-                    blenderDevEnv[line_elem[0]]=line_elem[1];
-                    // Object.defineProperty(blenderDevEnv, line_elem[0], line_elem[1]);
+                if (line_elem.length === 2) {
+                    blenderEnv[line_elem[0]] = line_elem[1];
                 }
             });
-        
+
         });
     }
 
-    return blenderDevEnv;
+    return blenderEnv;
 }

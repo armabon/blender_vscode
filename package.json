@@ -212,10 +212,16 @@
               "type": "string"
             }
           },
+          "blender.enableUserScriptFolder": {
+            "type":"boolean",
+            "scope": "resource",
+            "markdownDescription": "Enable debugging for the whole [`BLENDER_USER_SCRIPTS`](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html?highlight=blender_user_scripts#environment-variables) folder (EXPERIMENTAL)"
+          },
           "blender.userScriptFolder": {
             "type":"string",
             "scope": "resource",
-            "description": "Enable `USERSCRIPT` folder debug debug (EXPERIMENTAL)."
+            "markdownDescription": "Path to a custom [`BLENDER_USER_SCRIPTS`](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html?highlight=blender_user_scripts#environment-variables) folder (EXPERIMENTAL).",
+            "required": ["blender.enableDebugScriptFolder"]
           },
           "blender.envFile": {
             "type":"string",
