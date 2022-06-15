@@ -1,7 +1,6 @@
-import json
-import os
 import sys
 import traceback
+
 from pathlib import Path
 
 import bpy
@@ -34,35 +33,29 @@ def get_user_scripts_folder_path_mapping():
 def get_addons_path_mapping(addons_to_load):
     # print(f"loading addons: {addons_to_load}")
     # TODO: Addons path mapping
-    pass
+
+    return load_addons.setup_addon_links(addons_to_load)
 
 
 try:
-    # Retrieve configuration env vars
-    allow_modify_external_python = os.environ['ALLOW_MODIFY_EXTERNAL_PYTHON'] == "yes"
-    editor_address = f"http://localhost:{os.environ['EDITOR_PORT']}"
-    addons_to_load = tuple(map(lambda x: (Path(x["load_dir"]), x["module_name"]),
-                               json.loads(os.environ['ADDONS_TO_LOAD'])))
-    enable_user_script_folder = os.environ['ENABLE_USER_SCRIPT_FOLDER'] == "yes"
-
     # Ensure blender version compatibility
     if bpy.app.version < (2, 80, 34):
         handle_fatal_error("Please use a newer version of Blender")
 
-    # Blender_vscode depenencies installation 
+    # Blender_vscode depenencies installation
     installation.ensure_packages_are_installed(["debugpy", "flask", "requests"],
-                                               allow_modify_external_python)
+                                               environment.allow_modify_external_python)
 
     # Debug folder mapping setup
-    if enable_user_script_folder:
+    if environment.enable_user_script_folder:
         path_mapping = get_user_scripts_folder_path_mapping()
     else:
-        path_mapping = get_addons_path_mapping(addons_to_load)
+        path_mapping = get_addons_path_mapping(environment.addons_to_load)
 
-    communication.setup(editor_address, path_mapping)
+    communication.setup(environment.editor_address, path_mapping)
 
     # Enabling addons
-    load_addons.load(addons_to_load)
+    load_addons.load(environment.addons_to_load)
 
     # Register UI panels and Operators
     ui.register()

@@ -36,7 +36,6 @@ export class ModuleWorkspaceFolder {
         for (let folder of rootSubFolders) {
             if (folder.includes("modules")){
                 for (let subfolder of await getSubFiles(folder)){
-                    console.log(subfolder);
                     let module = new ModuleWorkspaceFolder(subfolder);
                     modules.push(module);
                 }
