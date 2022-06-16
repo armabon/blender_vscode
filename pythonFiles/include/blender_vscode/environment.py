@@ -29,6 +29,5 @@ if enable_user_script_folder:
 else:
     scripts_folder = default_script_folder 
 
-print(f"SCRIPT_FOLDER:{scripts_folder}")
 user_addon_directory = Path(bpy.utils.user_resource('SCRIPTS', path="addons"))
 addon_directories = tuple(map(Path, addon_utils.paths()))

@@ -13,11 +13,8 @@ class UpdateModuleOperator(bpy.types.Operator):
     module_name: StringProperty()
 
     def execute(self, context):
-        print("Update modules")
-
         for name in list(sys.modules.keys()):
             if name.startswith(self.module_name):
-                print(f"remove {name}")
                 del sys.modules[name]
                 send_dict_as_json({"type" : "moduleUpdated"})            
         else:

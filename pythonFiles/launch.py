@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
         # Debug folder mapping setup
         if environment.enable_user_script_folder:
-            print("Debug user script folder enabled.")
+            print("Debugging USER_SCRIPT_FOLDER.")
             script_dir = Path(environment.scripts_folder)
             path_mapping = [{"src": str(script_dir), "load": str(script_dir)}]
         else:
