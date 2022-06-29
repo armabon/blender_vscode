@@ -6,9 +6,10 @@ import * as child_process from 'child_process';
 import { launchPath } from './paths';
 import { getServerPort } from './communication';
 import { letUserPickItem } from './select_utils';
-import { getConfig, cancel, runTask } from './utils';
+import { getConfig, cancel, runTask, pathExists } from './utils';
 import { AddonWorkspaceFolder } from './addon_folder';
 import { BlenderWorkspaceFolder } from './blender_folder';
+import * as fs from 'fs';
 
 
 export class BlenderExecutable {
@@ -183,17 +184,49 @@ async function testIfPathIsBlender(filepath: string) {
 }
 
 function getBlenderLaunchArgs() {
-    return ['--python', launchPath];
+    return ['--python-use-system-env', '--python', launchPath];
 }
 
 async function getBlenderLaunchEnv() {
     let config = getConfig();
     let addons = await AddonWorkspaceFolder.All();
-    let loadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
+    let addonsLoadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
 
-    return {
-        ADDONS_TO_LOAD: JSON.stringify(loadDirsWithNames),
-        EDITOR_PORT: getServerPort().toString(),
-        ALLOW_MODIFY_EXTERNAL_PYTHON: <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no',
-    };
+    const blenderEnv: { [index: string]: any } = {};
+
+    let debugUserScriptFolder = <boolean>config.get('debugUserScriptFolder');
+    let userScriptForlderPath = <string>config.get('customUserScriptFolderPath');
+
+    blenderEnv['EDITOR_PORT'] = getServerPort().toString();
+    blenderEnv['ALLOW_MODIFY_EXTERNAL_PYTHON'] = <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no';
+    blenderEnv['ADDONS_TO_LOAD'] = JSON.stringify(addonsLoadDirsWithNames);
+    blenderEnv['ENABLE_USER_SCRIPT_FOLDER'] = debugUserScriptFolder ? 'yes' : 'no';
+
+    if (await pathExists(userScriptForlderPath)) {
+        blenderEnv['BLENDER_USER_SCRIPTS'] = userScriptForlderPath;
+        console.log("Custom BLENDER_USER_SCRIPTS enabled !");
+    }
+
+    // If an envfile is given, inject his content
+    let envFile = <string>config.get('envFile');
+    
+    if (await pathExists(envFile)) {
+        console.log("Injecting env vars from file"+envFile);
+
+        fs.readFile(envFile, 'utf8', function (err, data) {
+            if (err !== null) {
+                console.log(err);
+            }
+            let lines = data.split(/\r?\n/);
+            lines.forEach((line) => {
+                const line_elem = line.split("=");
+                if (line_elem.length === 2) {
+                    blenderEnv[line_elem[0]] = line_elem[1];
+                }
+            });
+
+        });
+    }
+
+    return blenderEnv;
 }

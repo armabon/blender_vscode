@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- New `blender.debugUserScriptFolder` option. Allows to work in the `UserScriptFolder` directly
+- New `blender.customUserScriptFolder` option. Allows to provide a custom `UserScriptFolder` directory.
+- New `blender.envFile` option. Allows to inject environment variable into Blender from a given `.env` file. 
+
 ## [0.0.17] - 2022-06-08
 
 ### Added

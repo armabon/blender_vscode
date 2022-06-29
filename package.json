@@ -2,7 +2,7 @@
   "name": "blender-development",
   "displayName": "Blender Development",
   "description": "Tools to simplify Blender development.",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "publisher": "JacquesLucke",
   "license": "MIT",
   "engines": {
@@ -211,6 +211,22 @@
             "items": {
               "type": "string"
             }
+          },
+          "blender.debugUserScriptFolder": {
+            "type":"boolean",
+            "scope": "resource",
+            "markdownDescription": "Enable debugging for the whole [`BLENDER_USER_SCRIPTS`](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html?highlight=blender_user_scripts#environment-variables) folder (EXPERIMENTAL)"
+          },
+          "blender.customUserScriptFolderPath": {
+            "type":"string",
+            "scope": "resource",
+            "markdownDescription": "Path to a custom [`BLENDER_USER_SCRIPTS`](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html?highlight=blender_user_scripts#environment-variables) folder (EXPERIMENTAL).",
+            "required": ["blender.enableDebugScriptFolder"]
+          },
+          "blender.envFile": {
+            "type":"string",
+            "scope": "resource",
+            "description": "Path to a file containing a list of environment variables to load in blender (EXPERIMENTAL)."
           }
         }
       }

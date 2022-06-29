@@ -2,17 +2,74 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import {
     getConfig, readTextFile, getWorkspaceFolders,
-    getSubfolders, executeTask, getAnyWorkspaceFolder, pathExists
+    getSubfolders, executeTask, getAnyWorkspaceFolder, pathExists, getSubFiles
 } from './utils';
 
 // TODO: It would be superior to use custom AddonFolder interface that is not bound to the
 // vscode.WorkspaceFolder directly. The 'uri' property is only one used at this point.
 
-export class AddonWorkspaceFolder {
-    folder: vscode.WorkspaceFolder;
+export class ModuleFolder {
+    uri: vscode.Uri;
+    constructor(path: string) {
+        this.uri = vscode.Uri.parse(path);
+    }
+}
 
-    constructor(folder: vscode.WorkspaceFolder) {
-        this.folder = folder;
+export class ModuleWorkspaceFolder {
+    folder: ModuleFolder;
+
+    constructor(folder: string) {
+        this.folder = new ModuleFolder(folder);
+    }
+
+    public getConfig() {
+        return getConfig(this.uri);
+    }
+
+    public static async All(){
+        let modules = [];
+        let config = getConfig();
+        let scriptFolder = <string>config.get('customUserScriptFolderPath');
+
+        let rootSubFolders = await getSubfolders(scriptFolder);
+
+        for (let folder of rootSubFolders) {
+            if (folder.includes("modules")){
+                for (let subfolder of await getSubFiles(folder)){
+                    let module = new ModuleWorkspaceFolder(subfolder);
+                    modules.push(module);
+                }
+            }
+        }
+        return modules;
+    }
+
+    public async getModuleName() {
+        return path.basename(this.uri.fsPath);
+    }
+
+    public async getLoadDirectoryAndModuleName() {
+        let module_name = await this.getModuleName();
+        return {
+            'load_dir' : this.uri.fsPath,
+            'module_name' : module_name,
+        };
+    }
+
+    get reloadOnSave() {
+        return <boolean>this.getConfig().get('addon.reloadOnSave');
+    }
+
+    get uri() {
+        return this.folder.uri;
+    }
+} 
+
+export class AddonWorkspaceFolder {
+    folder: ModuleFolder;
+
+    constructor(folder: string) {
+        this.folder = new ModuleFolder(folder);
     }
 
     public static async All() {
@@ -26,9 +83,25 @@ export class AddonWorkspaceFolder {
 
         let folders = [];
         for (let folder of addonFolders) {
-            let addon = new AddonWorkspaceFolder(folder);
+            let addon = new AddonWorkspaceFolder(folder.uri.fsPath);
             if (await addon.hasAddonEntryPoint()) {
                 folders.push(addon);
+            }
+        }
+
+        if (folders.length === 0){
+            let config = getConfig();
+            let scriptFolder = <string>config.get('customUserScriptFolderPath');
+            let rootSubFolders = await getSubfolders(scriptFolder);
+            for (let folder of rootSubFolders) {
+                if (folder.includes("addons")){
+                    for (let subfolder of await getSubfolders(folder)){
+                        let addon = new AddonWorkspaceFolder(subfolder);
+                        if (await addon.hasAddonEntryPoint()) {
+                            folders.push(addon);
+                        }
+                    }
+                }
             }
         }
         return folders;
@@ -78,7 +151,7 @@ export class AddonWorkspaceFolder {
     public async getModuleName() {
         let value = <string>getConfig(this.uri).get('addon.moduleName');
         if (value === 'auto') {
-            return path.basename(await this.getLoadDirectory());
+            return path.basename(this.folder.uri.fsPath);
         }
         else {
             return value;

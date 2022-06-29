@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { handleErrors } from './utils';
 import { COMMAND_newAddon } from './new_addon';
 import { COMMAND_newOperator } from './new_operator';
-import { AddonWorkspaceFolder } from './addon_folder';
+import { AddonWorkspaceFolder, ModuleWorkspaceFolder } from './addon_folder';
 import { BlenderExecutable } from './blender_executable';
 import { BlenderWorkspaceFolder } from './blender_folder';
 import { startServer, stopServer, RunningBlenders } from './communication';
@@ -122,6 +122,16 @@ async function reloadAddons(addons: AddonWorkspaceFolder[]) {
     instances.forEach(instance => instance.post({ type: 'reload', names: names }));
 }
 
+async function reloadModules(modules: ModuleWorkspaceFolder[]) {
+    if (modules.length === 0) return;
+    let instances = await RunningBlenders.getResponsive();
+    if (instances.length === 0) return;
+
+    let names = await Promise.all(modules.map(m => m.getModuleName()));
+    instances.forEach(instance => instance.post({ type: 'reload_module', names: names }));
+}
+
+
 async function rebuildAddons(addons: AddonWorkspaceFolder[]) {
     await Promise.all(addons.map(a => a.buildIfNecessary()));
 }
@@ -132,6 +142,8 @@ async function rebuildAddons(addons: AddonWorkspaceFolder[]) {
 
 async function HANDLER_updateOnSave(document: vscode.TextDocument) {
     if (isSavingForReload) return;
+    let modules = await ModuleWorkspaceFolder.All();
+    await reloadModules(modules.filter(m => m.reloadOnSave));
     let addons = await AddonWorkspaceFolder.All();
     await reloadAddons(addons.filter(a => a.reloadOnSave));
 }

@@ -1,5 +1,6 @@
 import os
 import bpy
+import addon_utils
 import sys
 import traceback
 from pathlib import Path
@@ -31,11 +32,14 @@ def setup_addon_links(addons_to_load):
 
 def load(addons_to_load):
     for source_path, module_name in addons_to_load:
-        try:
-            bpy.ops.preferences.addon_enable(module=module_name)
-        except:
-            traceback.print_exc()
-            send_dict_as_json({"type" : "enableFailure", "addonPath" : str(source_path)})
+        loaded_default, loaded_state = addon_utils.check(module_name)
+        if loaded_default:
+            print(f"Enabling addon {module_name}")
+            try:
+                bpy.ops.preferences.addon_enable(module=module_name)
+            except:
+                traceback.print_exc()
+                send_dict_as_json({"type" : "enableFailure", "addonPath" : str(source_path)})
 
 def create_link_in_user_addon_directory(directory, link_path):
     if os.path.exists(link_path):
