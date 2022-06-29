@@ -193,6 +193,7 @@ async function getBlenderLaunchEnv() {
     let addonsLoadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
 
     const blenderEnv: { [index: string]: any } = {};
+    const varsRegex : RegExp = new RegExp("\\$\{(.*?)\}");
 
     let debugUserScriptFolder = <boolean>config.get('debugUserScriptFolder');
     let userScriptForlderPath = <string>config.get('customUserScriptFolderPath');
@@ -221,7 +222,22 @@ async function getBlenderLaunchEnv() {
             lines.forEach((line) => {
                 const line_elem = line.split("=");
                 if (line_elem.length === 2) {
-                    blenderEnv[line_elem[0]] = line_elem[1];
+                    let key = line_elem[0];
+                    let value = line_elem[1];
+                    
+                    // Handle env file vars
+                    let match = varsRegex.exec(value);
+                    
+                    while (match != null) {
+                        let new_value = blenderEnv[match[1]];
+                        if (new_value === undefined){
+                            console.log(match[1]+"env var undefined.");
+                        }
+                        value = value.replace(match[0], blenderEnv[match[1]]);
+                        match = varsRegex.exec(value);
+                    }
+                    
+                    blenderEnv[key] = value;
                 }
             });
 
