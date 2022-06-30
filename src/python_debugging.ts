@@ -49,12 +49,13 @@ async function getPythonPathMappings(scriptsFolder: string, addonPathMappings: A
 
     if (mapWorkspace) {
         let workspaceFolders = vscode.workspace.workspaceFolders;
-
-        for (let folder of workspaceFolders) {
-            mappings.push({
-                localRoot: folder.uri.fsPath,
-                remoteRoot: folder.uri.fsPath
-            });
+        if (workspaceFolders) {
+            for (let folder of workspaceFolders) {
+                mappings.push({
+                    localRoot: folder.uri.fsPath,
+                    remoteRoot: folder.uri.fsPath
+                });
+            }
         }
     }
 
