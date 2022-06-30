@@ -4,6 +4,7 @@ import * as os from 'os';
 import { BlenderWorkspaceFolder } from './blender_folder';
 import { getStoredScriptFolders } from './scripts';
 import { AddonPathMapping } from './communication';
+import { getConfig} from './utils';
 
 type PathMapping = { localRoot: string, remoteRoot: string };
 
@@ -43,6 +44,19 @@ async function getPythonPathMappings(scriptsFolder: string, addonPathMappings: A
         localRoot: item.src,
         remoteRoot: item.load
     })));
+
+    let mapWorkspace = <boolean>getConfig().get('mapAllWorkspaceFolders');
+
+    if (mapWorkspace) {
+        let workspaceFolders = vscode.workspace.workspaceFolders;
+
+        for (let folder of workspaceFolders) {
+            mappings.push({
+                localRoot: folder.uri.fsPath,
+                remoteRoot: folder.uri.fsPath
+            });
+        }
+    }
 
     fixMappings(mappings);
     return mappings;

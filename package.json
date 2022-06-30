@@ -2,7 +2,7 @@
   "name": "blender-development",
   "displayName": "Blender Development",
   "description": "Tools to simplify Blender development.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "JacquesLucke",
   "license": "MIT",
   "engines": {
@@ -216,6 +216,11 @@
             "type": "boolean",
             "scope": "resource",
             "markdownDescription": "Enable debugging for the whole [`BLENDER_USER_SCRIPTS`](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html?highlight=blender_user_scripts#environment-variables) folder (EXPERIMENTAL)"
+          },
+          "blender.mapAllWorkspaceFolders": {
+            "type": "boolean",
+            "scope": "resource",
+            "markdownDescription": "Map every workspace root folders to the debugger (EXPERIMENTAL)"
           },
           "blender.customUserScriptFolderPath": {
             "type": "string",
