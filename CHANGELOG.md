@@ -1,7 +1,18 @@
 # Changelog
 
-## Unreleased
 
+## [1.2.0] - 2022-06-30
+
+### Added
+- New `blender.mapAllWorkspaceFolders` option. Allows root folders mapping in the debugger. 
+
+## [1.1.0] - 2022-06-29
+
+### Added
+- Support for vars in `.env` file
+## [1.0.0] - 2022-06-28
+
+### Added
 - New `blender.debugUserScriptFolder` option. Allows to work in the `UserScriptFolder` directly
 - New `blender.customUserScriptFolder` option. Allows to provide a custom `UserScriptFolder` directory.
 - New `blender.envFile` option. Allows to inject environment variable into Blender from a given `.env` file. 
