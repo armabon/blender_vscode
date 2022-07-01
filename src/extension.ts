@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { handleErrors } from './utils';
+import { getConfig, handleErrors } from './utils';
 import { COMMAND_newAddon } from './new_addon';
 import { COMMAND_newOperator } from './new_operator';
 import { AddonWorkspaceFolder, ModuleWorkspaceFolder } from './addon_folder';
@@ -128,6 +128,12 @@ async function reloadModules(modules: ModuleWorkspaceFolder[]) {
     if (instances.length === 0) return;
 
     let names = await Promise.all(modules.map(m => m.getModuleName()));
+    
+    let additionnalModules = <string[]>getConfig().get('externalModulesToReload');
+    for (let module of additionnalModules) {
+        names.push(module);
+    }
+
     instances.forEach(instance => instance.post({ type: 'reload_module', names: names }));
 }
 

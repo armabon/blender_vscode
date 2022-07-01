@@ -2,7 +2,7 @@
   "name": "blender-development",
   "displayName": "Blender Development",
   "description": "Tools to simplify Blender development.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "publisher": "JacquesLucke",
   "license": "MIT",
   "engines": {
@@ -234,7 +234,16 @@
             "type": "string",
             "scope": "resource",
             "description": "Path to a file containing a list of environment variables to load in blender (EXPERIMENTAL)."
+          },
+          "blender.externalModulesToReload": {
+            "type": "array",
+            "scope": "resource",
+            "description": "External python module to remove during a reload (EXPERIMENTAL).",
+            "items": {
+              "type": "string"
+            }
           }
+          
         }
       }
     ]

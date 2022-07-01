@@ -10,8 +10,10 @@ import {
 
 export class ModuleFolder {
     uri: vscode.Uri;
+    path: string;
     constructor(path: string) {
         this.uri = vscode.Uri.parse(path);
+        this.path = path;
     }
 }
 
@@ -104,7 +106,7 @@ export class AddonWorkspaceFolder {
                 }
             }
         }
-        return folders;
+        return await folders;
     }
 
     get uri() {
@@ -171,7 +173,7 @@ export class AddonWorkspaceFolder {
     public async getSourceDirectory() {
         let value = <string>getConfig(this.uri).get('addon.sourceDirectory');
         if (value === 'auto') {
-            return await tryFindActualAddonFolder(this.uri.fsPath);
+            return await tryFindActualAddonFolder(this.folder.path);
         }
         else {
             return this.makePathAbsolute(value);

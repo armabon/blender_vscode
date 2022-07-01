@@ -214,35 +214,32 @@ async function getBlenderLaunchEnv() {
     if (await pathExists(envFile)) {
         console.log("Injecting env vars from file"+envFile);
 
-        fs.readFile(envFile, 'utf8', function (err, data) {
-            if (err !== null) {
-                console.log(err);
-            }
-            let lines = data.split(/\r?\n/);
-            lines.forEach((line) => {
-                const line_elem = line.split("=");
-                if (line_elem.length === 2) {
-                    let key = line_elem[0];
-                    let value = line_elem[1];
-                    
-                    // Handle env file vars
-                    let match = varsRegex.exec(value);
-                    
-                    while (match != null) {
-                        let new_value = blenderEnv[match[1]];
-                        if (new_value === undefined){
-                            console.log(match[1]+"env var undefined.");
-                        }
-                        value = value.replace(match[0], blenderEnv[match[1]]);
-                        match = varsRegex.exec(value);
+        let data = fs.readFileSync(envFile, 'utf8');
+         
+        let lines = data.split(/\r?\n/);
+        lines.forEach((line) => {
+            const line_elem = line.split("=");
+            if (line_elem.length === 2) {
+                let key = line_elem[0];
+                let value = line_elem[1];
+                
+                // Handle env file vars
+                let match = varsRegex.exec(value);
+                
+                while (match != null) {
+                    let new_value = blenderEnv[match[1]];
+                    if (new_value === undefined){
+                        console.log(match[1]+"env var undefined.");
                     }
-                    
-                    blenderEnv[key] = value;
+                    value = value.replace(match[0], blenderEnv[match[1]]);
+                    match = varsRegex.exec(value);
                 }
-            });
+                
+                blenderEnv[key] = value;
+            }
 
         });
     }
 
-    return blenderEnv;
+    return await blenderEnv;
 }

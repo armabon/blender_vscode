@@ -1,6 +1,13 @@
 # Changelog
 
+## [1.3.0] - 2022-07-01
 
+### Added
+- New `blender.externalModulesToReload` option. Allows to specify custom python modules to remove during the addon reload.
+
+### Fixed
+- Addon reloading for code located on the network 
+  
 ## [1.2.0] - 2022-06-30
 
 ### Added
