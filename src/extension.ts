@@ -137,6 +137,13 @@ async function reloadModules(modules: ModuleWorkspaceFolder[]) {
     instances.forEach(instance => instance.post({ type: 'reload_module', names: names }));
 }
 
+async function reloadScene() {
+    let instances = await RunningBlenders.getResponsive();
+    if (instances.length === 0) return;
+
+    instances.forEach(instance => instance.post({ type: 'reload_scene'}));
+}
+
 
 async function rebuildAddons(addons: AddonWorkspaceFolder[]) {
     await Promise.all(addons.map(a => a.buildIfNecessary()));
@@ -152,4 +159,10 @@ async function HANDLER_updateOnSave(document: vscode.TextDocument) {
     await reloadModules(modules.filter(m => m.reloadOnSave));
     let addons = await AddonWorkspaceFolder.All();
     await reloadAddons(addons.filter(a => a.reloadOnSave));
+
+    let doReloadScene = <boolean[]>getConfig().get('reloadScene');
+    if (doReloadScene){
+        await reloadScene();
+    }
+
 }

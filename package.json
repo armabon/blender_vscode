@@ -242,8 +242,12 @@
             "items": {
               "type": "string"
             }
+          },
+          "blender.reloadScene": {
+              "type": "boolean",
+              "scope": "resource",
+              "markdownDescription": "Reload opened scene during automatic reloads (EXPERIMENTAL)"
           }
-          
         }
       }
     ]

@@ -2,6 +2,7 @@ import bpy
 import time
 import flask
 import debugpy
+import logging
 import random
 import requests
 import threading
@@ -22,9 +23,9 @@ def setup(address, path_mappings):
 
     send_connection_information(path_mappings)
 
-    print("Waiting for debug client.")
+    logging.info("Waiting for debug client.")
     debugpy.wait_for_client()
-    print("Debug client attached.")
+    logging.info("Debug client attached.")
 
 def start_own_server():
     port = [None]
@@ -66,7 +67,7 @@ post_handlers = {}
 @server.route("/", methods=['POST'])
 def handle_post():
     data = flask.request.get_json()
-    print("Got POST:", data)
+    logging.debug("Got POST:", data)
 
     if data["type"] in post_handlers:
         return post_handlers[data["type"]](data)
@@ -77,7 +78,7 @@ def handle_post():
 def handle_get():
     flask.request
     data = flask.request.get_json()
-    print("Got GET:", data)
+    logging.debug("Got GET:", data)
 
     if data["type"] == "ping":
         pass
@@ -109,7 +110,7 @@ def send_connection_information(path_mappings):
     })
 
 def send_dict_as_json(data):
-    print("Sending:", data)
+    logging.debug("Sending:", data)
     requests.post(EDITOR_ADDRESS, json=data)
 
 

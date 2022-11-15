@@ -2,7 +2,7 @@ import bpy
 import sys
 import traceback
 from bpy.props import *
-import addon_utils
+import logging
 from .. utils import redraw_all
 from .. communication import send_dict_as_json, register_post_action
 
@@ -15,11 +15,13 @@ class UpdateAddonOperator(bpy.types.Operator):
     def execute(self, context):
         # Only update already enabled add-ons
         if self.module_name in bpy.context.preferences.addons:
-            print(f"Updated addon {self.module_name}")
+            logging.info(f"Updating addon {self.module_name}")
             try:
+                print(self.module_name)
                 bpy.ops.preferences.addon_disable(module=self.module_name)
-            except:
+            except Exception as e:
                 traceback.print_exc()
+                print(e)
                 send_dict_as_json({"type" : "disableFailure"})
                 return {'CANCELLED'}
 

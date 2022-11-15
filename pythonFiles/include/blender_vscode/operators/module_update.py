@@ -1,6 +1,7 @@
 import bpy
 import sys
 import traceback
+import logging
 from bpy.props import *
 from .. utils import redraw_all
 from .. communication import send_dict_as_json, register_post_action
@@ -15,6 +16,7 @@ class UpdateModuleOperator(bpy.types.Operator):
     def execute(self, context):
         for name in list(sys.modules.keys()):
             if name.startswith(self.module_name):
+                logging.info(f"Updating module {name}")
                 del sys.modules[name]
                 send_dict_as_json({"type" : "moduleUpdated"})            
         else:

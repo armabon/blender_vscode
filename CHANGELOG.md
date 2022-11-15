@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.0] - 2022-11-05
+
+- Use logging 
+- New `blender.reloadScene` option. Allows to automatically reload the scene after an autosave.
+
 ## [1.3.0] - 2022-07-01
 
 ### Added
