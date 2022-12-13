@@ -1,7 +1,17 @@
 # Changelog
 
+## [1.5.0] - 2022-12-13
+
+### Added
+- New `blender.executables.scene` option. Allows to specify a scene to open with blender.
+- New `blender.executables.envFIle` option. Allows to specify an envFile with a custom configuration.
+
+### Fixed
+- Passed `blender.executables` configuration scope to default which allow to set it from the workspace config.   
+
 ## [1.4.0] - 2022-11-05
 
+### Added
 - Use logging 
 - New `blender.reloadScene` option. Allows to automatically reload the scene after an autosave.
 

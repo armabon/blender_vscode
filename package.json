@@ -2,7 +2,7 @@
   "name": "blender-development",
   "displayName": "Blender Development",
   "description": "Tools to simplify Blender development.",
-  "version": "1.3.0",
+  "version": "1.5.0",
   "publisher": "JacquesLucke",
   "license": "MIT",
   "engines": {
@@ -108,8 +108,7 @@
         "properties": {
           "blender.executables": {
             "type": "array",
-            "scope": "application",
-            "description": "Paths to Blender executables.",
+            "description": "Configuration to launch blender.",
             "items": {
               "type": "object",
               "title": "Single Blender Path",
@@ -122,10 +121,20 @@
                   "type": "string",
                   "description": "Custom name for this Blender version."
                 },
+                "scene": {
+                  "type": "string",
+                  "description": "Custom blend scene to open.",
+                  "default": ""
+                },
                 "isDebug": {
                   "type": "boolean",
                   "description": "Is this executable a debug build.",
                   "default": false
+                },
+                "envFile": {
+                  "type": "string",
+                  "description": "Environment file path.",
+                  "default": ""
                 }
               }
             }
@@ -229,11 +238,6 @@
             "required": [
               "blender.enableDebugScriptFolder"
             ]
-          },
-          "blender.envFile": {
-            "type": "string",
-            "scope": "resource",
-            "description": "Path to a file containing a list of environment variables to load in blender (EXPERIMENTAL)."
           },
           "blender.externalModulesToReload": {
             "type": "array",

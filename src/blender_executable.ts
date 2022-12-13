@@ -51,11 +51,23 @@ export class BlenderExecutable {
         return this.data.path;
     }
 
+    private getBlenderLaunchArgs() {
+        let args = new Array();
+        args.push('--python-use-system-env')
+        args.push('--python', launchPath)
+
+        if (this.data.scene != undefined && this.data.scene.length > 0){
+            args.push(this.data.scene)
+        }
+
+        return args;
+    }
+
     public async launch() {
         let execution = new vscode.ProcessExecution(
             this.path,
-            getBlenderLaunchArgs(),
-            { env: await getBlenderLaunchEnv() }
+            this.getBlenderLaunchArgs(),
+            { env: await this.getBlenderLaunchEnv() }
         );
 
         await runTask('blender', execution);
@@ -67,8 +79,8 @@ export class BlenderExecutable {
             type: 'cppdbg',
             request: 'launch',
             program: this.data.path,
-            args: ['--debug'].concat(getBlenderLaunchArgs()),
-            env: await getBlenderLaunchEnv(),
+            args: ['--debug'].concat(this.getBlenderLaunchArgs()),
+            env: await this.getBlenderLaunchEnv(),
             stopAtEntry: false,
             MIMode: 'gdb',
             cwd: folder.uri.fsPath,
@@ -84,12 +96,71 @@ export class BlenderExecutable {
 
         await runTask(taskName, execution, true);
     }
+
+    private async getBlenderLaunchEnv() {
+        let config = getConfig();
+        let addons = await AddonWorkspaceFolder.All();
+        let addonsLoadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
+    
+        const blenderEnv: { [index: string]: any } = {};
+        const varsRegex : RegExp = new RegExp("\\$\{(.*?)\}");
+    
+        let debugUserScriptFolder = <boolean>config.get('debugUserScriptFolder');
+        let userScriptForlderPath = <string>config.get('customUserScriptFolderPath');
+    
+        blenderEnv['EDITOR_PORT'] = getServerPort().toString();
+        blenderEnv['ALLOW_MODIFY_EXTERNAL_PYTHON'] = <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no';
+        blenderEnv['ADDONS_TO_LOAD'] = JSON.stringify(addonsLoadDirsWithNames);
+        blenderEnv['ENABLE_USER_SCRIPT_FOLDER'] = debugUserScriptFolder ? 'yes' : 'no';
+    
+        if (await pathExists(userScriptForlderPath)) {
+            blenderEnv['BLENDER_USER_SCRIPTS'] = userScriptForlderPath;
+            console.log("Custom BLENDER_USER_SCRIPTS enabled !");
+        }
+    
+        // If an envfile is given, inject his content
+        let envFile = this.data.envFile;
+        if (envFile != undefined && envFile.length > 0 && await pathExists(envFile)){
+            console.log("Injecting env vars from file"+envFile);
+    
+            let data = fs.readFileSync(envFile, 'utf8');
+             
+            let lines = data.split(/\r?\n/);
+            lines.forEach((line) => {
+                const line_elem = line.split("=");
+                if (line_elem.length === 2) {
+                    let key = line_elem[0];
+                    let value = line_elem[1];
+                    
+                    // Handle env file vars
+                    let match = varsRegex.exec(value);
+                    
+                    while (match != null) {
+                        let new_value = blenderEnv[match[1]];
+                        if (new_value === undefined){
+                            console.log(match[1]+"env var undefined.");
+                        }
+                        value = value.replace(match[0], blenderEnv[match[1]]);
+                        match = varsRegex.exec(value);
+                    }
+                    
+                    blenderEnv[key] = value;
+                }
+    
+            });
+        }
+    
+        return await blenderEnv;
+    }
+    
 }
 
 interface BlenderPathData {
     path: string;
     name: string;
     isDebug: boolean;
+    scene: string;
+    envFile: string;
 }
 
 interface BlenderType {
@@ -132,6 +203,8 @@ async function askUser_FilteredBlenderPath(type: BlenderType): Promise<BlenderPa
         path: filepath,
         name: '',
         isDebug: false,
+        scene: '',
+        envFile: '',
     };
     type.setSettings(pathData);
     return pathData;
@@ -183,63 +256,3 @@ async function testIfPathIsBlender(filepath: string) {
     });
 }
 
-function getBlenderLaunchArgs() {
-    return ['--python-use-system-env', '--python', launchPath];
-}
-
-async function getBlenderLaunchEnv() {
-    let config = getConfig();
-    let addons = await AddonWorkspaceFolder.All();
-    let addonsLoadDirsWithNames = await Promise.all(addons.map(a => a.getLoadDirectoryAndModuleName()));
-
-    const blenderEnv: { [index: string]: any } = {};
-    const varsRegex : RegExp = new RegExp("\\$\{(.*?)\}");
-
-    let debugUserScriptFolder = <boolean>config.get('debugUserScriptFolder');
-    let userScriptForlderPath = <string>config.get('customUserScriptFolderPath');
-
-    blenderEnv['EDITOR_PORT'] = getServerPort().toString();
-    blenderEnv['ALLOW_MODIFY_EXTERNAL_PYTHON'] = <boolean>config.get('allowModifyExternalPython') ? 'yes' : 'no';
-    blenderEnv['ADDONS_TO_LOAD'] = JSON.stringify(addonsLoadDirsWithNames);
-    blenderEnv['ENABLE_USER_SCRIPT_FOLDER'] = debugUserScriptFolder ? 'yes' : 'no';
-
-    if (await pathExists(userScriptForlderPath)) {
-        blenderEnv['BLENDER_USER_SCRIPTS'] = userScriptForlderPath;
-        console.log("Custom BLENDER_USER_SCRIPTS enabled !");
-    }
-
-    // If an envfile is given, inject his content
-    let envFile = <string>config.get('envFile');
-    
-    if (await pathExists(envFile)) {
-        console.log("Injecting env vars from file"+envFile);
-
-        let data = fs.readFileSync(envFile, 'utf8');
-         
-        let lines = data.split(/\r?\n/);
-        lines.forEach((line) => {
-            const line_elem = line.split("=");
-            if (line_elem.length === 2) {
-                let key = line_elem[0];
-                let value = line_elem[1];
-                
-                // Handle env file vars
-                let match = varsRegex.exec(value);
-                
-                while (match != null) {
-                    let new_value = blenderEnv[match[1]];
-                    if (new_value === undefined){
-                        console.log(match[1]+"env var undefined.");
-                    }
-                    value = value.replace(match[0], blenderEnv[match[1]]);
-                    match = varsRegex.exec(value);
-                }
-                
-                blenderEnv[key] = value;
-            }
-
-        });
-    }
-
-    return await blenderEnv;
-}
